@@ -33,8 +33,24 @@ public class PlayerHandler implements HttpHandler {
             List<Player> players = playerDAO.findAll();
             JSONArray response = JsonUtil.toJsonArray(players);
             sendResponse(exchange, 200, response.toString());
+            return;
+        }
+
+        if(path.startsWith("/api/players/")) {
+            String[] pathParts = exchange.getRequestURI().getPath().split("/");
+            long id = Long.parseLong(pathParts[pathParts.length - 1]);
+
+            Player player  = playerDAO.findById(id);
+
+            if(player != null) {
+                JSONObject response = JsonUtil.toJson(player);
+                sendResponse(exchange, 200, response.toString());
+            } else {
+                sendResponse(exchange, 404, "{\"error\":\"Jogador não encontrado\"}");
+            }
         }
     }
+
 
     private void sendResponse(HttpExchange exchange, int statusCode, String response) throws IOException {
         exchange.getResponseHeaders().set("Content-Type", "application/json");

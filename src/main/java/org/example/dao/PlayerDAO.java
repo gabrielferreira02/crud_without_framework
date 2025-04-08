@@ -32,4 +32,29 @@ public class PlayerDAO {
 
         return  players;
     }
+
+    public Player findById(long id) {
+        String sql = "SELECT * FROM players WHERE id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+
+            if(rs.next()) {
+                Player player = new Player();
+                player.setId(rs.getLong("id"));
+                player.setName(rs.getString("name"));
+                player.setPosition(rs.getString("position"));
+                player.setTeam(rs.getString("team"));
+                return player;
+            }
+
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+        }
+
+        return null;
+    }
 }
