@@ -24,6 +24,10 @@ public class PlayerHandler implements HttpHandler {
         if("GET".equals(exchange.getRequestMethod())) {
             handleGetRequest(exchange);
         }
+
+        if("DELETE".equals(exchange.getRequestMethod())) {
+            handleDeleteRequest(exchange);
+        }
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
@@ -48,6 +52,22 @@ public class PlayerHandler implements HttpHandler {
             } else {
                 sendResponse(exchange, 404, "{\"error\":\"Jogador não encontrado\"}");
             }
+        }
+    }
+
+    private void handleDeleteRequest(HttpExchange exchange) throws IOException {
+        String path = exchange.getRequestURI().getPath();
+
+        if(path.startsWith("/api/players/")) {
+            String[] pathParts = exchange.getRequestURI().getPath().split("/");
+            long id = Long.parseLong(pathParts[pathParts.length - 1]);
+
+            if(playerDAO.deleteById(id)) {
+                sendResponse(exchange, 204, "");
+                return;
+            }
+
+            sendResponse(exchange, 404, "{\"error\":\"Jogador id não encontrado\"}");
         }
     }
 

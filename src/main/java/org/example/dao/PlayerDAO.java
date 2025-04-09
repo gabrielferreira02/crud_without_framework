@@ -57,4 +57,18 @@ public class PlayerDAO {
 
         return null;
     }
+
+    public boolean deleteById(long id) {
+        String sql = "DELETE FROM players WHERE id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, id);
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }
