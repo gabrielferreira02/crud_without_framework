@@ -10,7 +10,7 @@ import java.util.List;
 public class PlayerDAO {
 
     public List<Player> findAll() {
-        String sql = "SELECT * FROM players";
+        String sql = "SELECT * FROM players ORDER BY id ASC";
         List<Player> players = new ArrayList<>();
 
         try (Connection conn = DatabaseConfig.getConnection();
@@ -81,6 +81,25 @@ public class PlayerDAO {
             stmt.setString(1, player.getName());
             stmt.setString(2, player.getPosition());
             stmt.setString(3, player.getTeam());
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
+
+    public boolean update(Player player) {
+        String sql = "UPDATE players SET name = ?, position = ?, team = ? WHERE id = ?";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, player.getName());
+            stmt.setString(2, player.getPosition());
+            stmt.setString(3, player.getTeam());
+            stmt.setLong(4, player.getId());
 
             int rows = stmt.executeUpdate();
             return rows > 0;

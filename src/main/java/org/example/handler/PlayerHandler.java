@@ -33,6 +33,10 @@ public class PlayerHandler implements HttpHandler {
         if("POST".equals(exchange.getRequestMethod())) {
             handlePostRequest(exchange);
         }
+
+        if("PUT".equals(exchange.getRequestMethod())) {
+            handlePutRequest(exchange);
+        }
     }
 
     private void handleGetRequest(HttpExchange exchange) throws IOException {
@@ -91,6 +95,55 @@ public class PlayerHandler implements HttpHandler {
 
                 if(playerDAO.save(player)) {
                     sendResponse(exchange, 201, "{\"message\":\"Jogador criado com sucesso\"}");
+                    return;
+                }
+
+                sendResponse(exchange, 404, "{\"error\":\"Falha ao criar jogador\"}");
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private void handlePutRequest(HttpExchange exchange) {
+        String path = exchange.getRequestURI().getPath();
+
+        if(path.equals("/api/players")) {
+            try {
+                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+                JSONObject jsonBody = new JSONObject(body);
+                long id = jsonBody.getLong("id");
+
+                Player player = playerDAO.findById(id);
+
+                if(player == null) {
+                    sendResponse(exchange, 404, "{\"error\":\"Jogador não encontrado\"}");
+                    return;
+                }
+
+                player.setName(jsonBody.getString("name"));
+                player.setPosition(jsonBody.getString("position"));
+                player.setTeam(jsonBody.getString("team"));
+
+                if(player.getName().isBlank()) {
+                    sendResponse(exchange, 400, "{\"error\":\"Nome não pode ser vazio\"}");
+                    return;
+                }
+
+                if(player.getPosition().isBlank()) {
+                    sendResponse(exchange, 400, "{\"error\":\"Posição não pode ser vazio\"}");
+                    return;
+                }
+
+                if(player.getTeam().isBlank()) {
+                    sendResponse(exchange, 400, "{\"error\":\"Time não pode ser vazio\"}");
+                    return;
+                }
+
+                if(playerDAO.update(player)) {
+                    sendResponse(exchange, 200, "{\"message\":\"Jogador atualizado com sucesso\"}");
                     return;
                 }
 
