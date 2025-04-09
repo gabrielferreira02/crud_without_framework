@@ -71,4 +71,22 @@ public class PlayerDAO {
             return false;
         }
     }
+
+    public boolean save(Player player) {
+        String sql = "INSERT INTO players (name, position, team) VALUES (?, ?, ?)";
+
+        try (Connection conn = DatabaseConfig.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, player.getName());
+            stmt.setString(2, player.getPosition());
+            stmt.setString(3, player.getTeam());
+
+            int rows = stmt.executeUpdate();
+            return rows > 0;
+        } catch (SQLException e) {
+            System.out.println(e.getMessage());
+            return false;
+        }
+    }
 }

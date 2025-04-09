@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 public class PlayerHandler implements HttpHandler {
@@ -27,6 +28,10 @@ public class PlayerHandler implements HttpHandler {
 
         if("DELETE".equals(exchange.getRequestMethod())) {
             handleDeleteRequest(exchange);
+        }
+
+        if("POST".equals(exchange.getRequestMethod())) {
+            handlePostRequest(exchange);
         }
     }
 
@@ -51,6 +56,48 @@ public class PlayerHandler implements HttpHandler {
                 sendResponse(exchange, 200, response.toString());
             } else {
                 sendResponse(exchange, 404, "{\"error\":\"Jogador não encontrado\"}");
+            }
+        }
+    }
+
+    private void handlePostRequest(HttpExchange exchange) {
+        String path = exchange.getRequestURI().getPath();
+
+        if(path.equals("/api/players")) {
+            try {
+                String body = new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8);
+
+                JSONObject jsonBody = new JSONObject(body);
+
+                Player player = new Player();
+                player.setName(jsonBody.getString("name"));
+                player.setPosition(jsonBody.getString("position"));
+                player.setTeam(jsonBody.getString("team"));
+
+                if(player.getName().isBlank()) {
+                    sendResponse(exchange, 404, "{\"error\":\"Nome não pode ser vazio\"}");
+                    return;
+                }
+
+                if(player.getPosition().isBlank()) {
+                    sendResponse(exchange, 404, "{\"error\":\"Posição não pode ser vazio\"}");
+                    return;
+                }
+
+                if(player.getTeam().isBlank()) {
+                    sendResponse(exchange, 404, "{\"error\":\"Time não pode ser vazio\"}");
+                    return;
+                }
+
+                if(playerDAO.save(player)) {
+                    sendResponse(exchange, 201, "{\"message\":\"Jogador criado com sucesso\"}");
+                    return;
+                }
+
+                sendResponse(exchange, 404, "{\"error\":\"Falha ao criar jogador\"}");
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
         }
     }
