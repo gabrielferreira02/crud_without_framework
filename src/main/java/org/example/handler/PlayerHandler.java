@@ -63,7 +63,7 @@ public class PlayerHandler implements HttpHandler {
             long id = Long.parseLong(pathParts[pathParts.length - 1]);
 
             if(playerDAO.deleteById(id)) {
-                sendResponse(exchange, 204, "");
+                sendNoContentResponse(exchange);
                 return;
             }
 
@@ -79,5 +79,10 @@ public class PlayerHandler implements HttpHandler {
         OutputStream os = exchange.getResponseBody();
         os.write(response.getBytes());
         os.close();
+    }
+
+    private void sendNoContentResponse(HttpExchange exchange) throws IOException {
+        exchange.sendResponseHeaders(204, -1);
+        exchange.getResponseBody().close();
     }
 }
